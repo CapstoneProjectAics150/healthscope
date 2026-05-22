@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+     .profile-bg {
+    background: url("{% static 'images/cb4259f1-ead6-4c1f-8419-a1007e14f349.jpeg' %}") no-repeat center center/cover;
+    min-height: 100vh;
+    padding: 40px 0;
+  }
+
+    body {
+        font-family: Arial;
+        background: #f8f9fa;
+    }
+
+    .main-container {
+        display: flex;
+        height: calc(100vh - 70px);
+    }
+
+    /* 🔹 SIDEBAR */
+    .sidebar {
+        width: 25%;
+        background: #ffffff;
+        border-right: 1px solid #ddd;
+        overflow-y: auto;
+        padding: 15px;
+    }
+
+    .chat-item {
+        padding: 10px;
+        margin-bottom: 8px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .chat-item:hover {
+        background: #f1f1f1;
+    }
+
+    .chat-item.active {
+        background: #0d6efd;
+        color: white;
+    }
+
+    /* 🔹 CHAT AREA */
+    .chat-area {
+        width: 75%;
+        padding: 15px;
+    }
+
+    .chat-box {
+        height: 100%;
+        overflow-y: auto;
+        background: #ffffff;
+        border-radius: 10px;
+        padding: 15px;
+        border: 1px solid #ddd;
+    }
+
+    /* 🔹 MESSAGES */
+    .msg-user {
+        text-align: right;
+        margin: 8px 0;
+    }
+
+    .msg-bot {
+        text-align: left;
+        margin: 8px 0;
+    }
+
+    .bubble-user {
+        background: #0d6efd;
+        color: white;
+        padding: 10px;
+        border-radius: 10px;
+        display: inline-block;
+        max-width: 70%;
+    }
+
+    .bubble-bot {
+        background: #e9ecef;
+        padding: 10px;
+        border-radius: 10px;
+        display: inline-block;
+        max-width: 70%;
+    }
+</style>
+
+
+  <div class="profile-bg">
+    <div class="main-container">
+      <!-- 🔹 SIDEBAR -->
+      <div class="sidebar">
+        <h5>💬 Chat History</h5>
+
+        {% for conv in conversations %}
+          <div class="chat-item" onclick="loadConversation({{ conv.id }}, this)">
+            <strong>Chat {{ forloop.counter }}</strong><br />
+            <small>{{ conv.created_at|date:'d M Y, H:i' }}</small>
+          </div>
+        {% empty %}
+          <p>No chats yet</p>
+        {% endfor %}
+      </div>
+
+      <!-- 🔹 CHAT VIEW ONLY -->
+      <div class="chat-area">
+        <div id="chat-box" class="chat-box">
+          <p class="text-muted">Select a chat to view messages</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentConversationId = null
+    
+    // 🔹 Load Conversation
+    function loadConversation(conv_id, element) {
+      currentConversationId = conv_id
+    
+      document.querySelectorAll('.chat-item').forEach((el) => el.classList.remove('active'))
+      element.classList.add('active')
+    
+      fetch(`/chate/chat/get-messages/${conv_id}/`)
+        .then((res) => res.json())
+        .then((data) => {
+          let box = document.getElementById('chat-box')
+          box.innerHTML = ''
+    
+          data.messages.forEach((msg) => {
+            let div = document.createElement('div')
+    
+            if (msg.sender === 'user') {
+              div.className = 'msg-user'
+              div.innerHTML = `
+                        <span class="bubble-user">${msg.content}</span><br>
+                        <small>${msg.time}</small>
+                    `
+            } else {
+              div.className = 'msg-bot'
+              div.innerHTML = `
+                        <span class="bubble-bot">${msg.content}</span><br>
+                        <small>${msg.time}</small>
+                    `
+            }
+    
+            box.appendChild(div)
+          })
+    
+          box.scrollTop = box.scrollHeight
+        })
+    }
+    
+    // 🔥 AUTO LOAD FIRST CHAT
+    window.onload = function () {
+      let first = document.querySelector('.chat-item')
+      if (first) first.click()
+    }
+  </script>
+{% endblock %}

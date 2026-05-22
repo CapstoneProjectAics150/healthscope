@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+  .profile-bg {
+    background: url("{% static 'images/cb4259f1-ead6-4c1f-8419-a1007e14f349.jpeg' %}") no-repeat center center/cover;
+    min-height: 100vh;
+    padding: 40px 0;
+  }
+</style>
+
+<div class="profile-bg">
+  
+  <div class="profile-bg">
+    <div class="container">
+      <h1 style="text-align: center;"><i>Login Form</i></h1>
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="mb-3">
+          <label for="exampleInputEmail1" class="form-label"><i>Username</i></label>
+          <input type="text" class="form-control" name="username" id="exampleInputEmail1" aria-describedby="emailHelp" />
+        </div>
+        <div class="mb-3">
+          <label for="exampleInputPassword1" class="form-label"><i>Password</i></label>
+          <input type="password" class="form-control" name="password" id="exampleInputPassword1" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Submit</button>
+      </form>
+      <a href="{% url 'register' %}"><i>SingUP Here</i></a>
+    </div>
+  </div>
+{% endblock %}

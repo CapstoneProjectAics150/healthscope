@@ -1,0 +1,71 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>
+      {% block title %}
+      {% endblock %}
+    </title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+  </head>
+
+  <body style="padding-top: 70px;">
+    <!-- NAVBAR START -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+      <div class="container-fluid">
+        <!-- 🔥 Logo + Name -->
+        <a class="navbar-brand d-flex align-items-center" href="{% url 'home' %}">
+          <img src="{% static 'images\c4330dc9-cd7a-4d83-8b1e-c3cf85d68733.jpeg' %}" width="40" class="me-2" />
+          <strong>HealthScope</strong>
+        </a>
+
+        <!-- Mobile Toggle -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"><span class="navbar-toggler-icon"></span></button>
+
+        <!-- Navbar Items -->
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <!-- LEFT SIDE -->
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a class="nav-link active" href="{% url 'home' %}"><i class="bi bi-house">Home</i></a>
+            </li>
+
+            {% if user.is_authenticated %}
+              <li class="nav-item">
+                <a class="nav-link active" href="{% url 'history' %}"><i class="bi bi-cpu">History</i></a>
+              </li>
+
+              <li class="nav-item">
+                <a class="nav-link active" href="{% url 'chatbot' %}"><i class="bi bi-chat-dots">Chat AI</i></a>
+              </li>
+
+              <li class="nav-item">
+                <a class="nav-link active" href="{% url 'profile' %}"><i class="bi bi-person">Profile</i></a>
+              </li>
+            {% endif %}
+          </ul>
+
+          <!-- RIGHT SIDE BUTTONS -->
+          {% if not user.is_authenticated %}
+            <a class="btn btn-outline-light mx-2" href="{% url 'login' %}">Login</a>
+            <a class="btn btn-light" href="{% url 'register' %}">Register</a>
+          {% else %}
+            <span class="text-white me-3">Hi {{ user.username }}</span>
+            <a class="btn btn-danger" href="{% url 'logout' %}">Logout</a>
+          {% endif %}
+        </div>
+      </div>
+    </nav>
+    <!-- NAVBAR END -->
+
+    {% block content %}
+
+    {% endblock %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<style>
+  .profile-bg {
+    background: url("{% static 'images/cb4259f1-ead6-4c1f-8419-a1007e14f349.jpeg' %}") no-repeat center center/cover;
+    min-height: 100vh;
+    padding: 40px 0;
+  }
+
+  #chat-box {
+    height: 400px;
+    line-height: 1.6;
+    font-size: 27px;
+    overflow-y: auto;
+    padding: 15px;
+    background: #f1f1f1;
+    border-radius: 10px;
+  }
+</style>
+<div class="profile-bg">
+  <div class="container mt-5">
+    <h3 class="text-center">🩺 Health Chatbot</h3>
+
+    <div id="chat-box"></div>
+
+    <div class="input-group mt-3">
+      <input type="text" id="message" class="form-control" placeholder="Type symptoms..." />
+    
+      <button class="btn btn-primary" onclick="sendMessage()">Send</button>
+    
+      <button class="btn btn-danger" onclick="deleteChat()">🗑️</button>
+    </div>
+  </div>
+</div>
+<script>
+
+// 🔹 SAVE CHAT
+function saveChat() {
+    let box = document.getElementById('chat-box')
+    localStorage.setItem('chat_data', box.innerHTML)
+}
+
+// 🔹 LOAD CHAT (on page load)
+window.onload = function() {
+    let saved = localStorage.getItem('chat_data')
+    if (saved) {
+        document.getElementById('chat-box').innerHTML = saved
+    }
+}
+
+
+// 🔹 SPELLING FIX
+function fixSpelling(text) {
+    let corrections = {
+        "fevr": "fever",
+        "hedache": "headache",
+        "stomak": "stomach",
+        "caugh": "cough",
+        "diabtes": "diabetes",
+        "coldd": "cold",
+        "painn": "pain"
+    }
+
+    return text.split(" ").map(w => corrections[w.toLowerCase()] || w).join(" ")
+}
+
+
+// 🔹 TIME
+function getTime() {
+    let now = new Date()
+    return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+}
+
+
+// 🔹 SEND MESSAGE
+function sendMessage() {
+    let inputBox = document.getElementById('message')
+    let msg = inputBox.value.trim()
+
+    if (!msg) return
+
+    msg = fixSpelling(msg)
+
+    let formData = new FormData()
+    formData.append('message', msg)
+
+    fetch('api/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+
+        let box = document.getElementById('chat-box')
+        let time = getTime()
+
+        box.innerHTML += `
+            <div style="text-align:right; margin:5px;">
+                <span style="background:#0d6efd;color:white;padding:8px 12px;border-radius:10px;">
+                    ${msg}
+                </span><br>
+                <small>${time}</small>
+            </div>
+        `
+
+        box.innerHTML += `
+            <div style="text-align:left; margin:5px;">
+                <span style="background:#e9ecef;padding:8px 12px;border-radius:10px;">
+                    ${data.reply}
+                </span><br>
+                <small>${time}</small>
+            </div>
+        `
+
+        inputBox.value = ""
+
+        // ✅ AUTO SCROLL
+        box.scrollTop = box.scrollHeight
+
+        // ✅ SAVE CHAT
+        saveChat()
+    })
+}
+
+
+// 🔹 ENTER KEY
+document.getElementById("message").addEventListener("keydown", function(event) {
+    if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault()
+        sendMessage()
+    }
+})
+
+
+// 🔹 DELETE CHAT
+function deleteChat() {
+    let box = document.getElementById('chat-box')
+    box.innerHTML = ""
+
+    // ✅ ALSO CLEAR STORAGE
+    localStorage.removeItem('chat_data')
+}
+
+
+// 🔹 CSRF
+function getCookie(name) {
+    let cookies = document.cookie.split(';')
+    for (let c of cookies) {
+        let cookie = c.trim()
+        if (cookie.startsWith(name + '=')) {
+            return decodeURIComponent(cookie.substring(name.length + 1))
+        }
+    }
+    return null
+}
+
+</script>
+
+{% endblock %}
